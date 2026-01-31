@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Vercel - KeyAuth</title>
+    <style>
+        body { 
+            font-family: Arial; 
+            padding: 20px; 
+            background: #1a1a1a; 
+            color: white; 
+            text-align: center;
+        }
+        .status { 
+            padding: 20px; 
+            margin: 10px; 
+            border-radius: 8px; 
+            font-size: 18px;
+        }
+        .success { background: #22c55e; }
+        .error { background: #ef4444; }
+        .info { background: #3b82f6; }
+        button { 
+            padding: 15px 30px; 
+            margin: 10px; 
+            background: #3b82f6; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste KeyAuth - Vercel</h1>
+    <p>Este arquivo testa se o sistema está funcionando na Vercel.</p>
+    
+    <div id="status" class="status info">
+        ⏳ Iniciando testes...
+    </div>
+    
+    <button onclick="testLocalStorage()">Testar localStorage</button>
+    <button onclick="testUserCreation()">Testar Criação de Usuário</button>
+    <button onclick="openMainSystem()">Abrir Sistema Principal</button>
+    
+    <div id="results"></div>
+
+    <script>
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            document.getElementById('results').appendChild(div);
+        }
+
+        function testLocalStorage() {
+            updateStatus('🔍 Testando localStorage...', 'info');
+            
+            try {
+                // Teste básico
+                localStorage.setItem('test_vercel', 'funcionando');
+                const result = localStorage.getItem('test_vercel');
+                
+                if (result === 'funcionando') {
+                    updateStatus('✅ localStorage funcionando perfeitamente!', 'success');
+                    localStorage.removeItem('test_vercel');
+                } else {
+                    updateStatus('❌ localStorage não está funcionando', 'error');
+                }
+            } catch (e) {
+                updateStatus('❌ Erro no localStorage: ' + e.message, 'error');
+            }
+        }
+
+        function testUserCreation() {
+            updateStatus('👤 Testando criação de usuário...', 'info');
+            
+            try {
+                // Simular criação de usuário
+                const testUser = {
+                    id: Date.now().toString(),
+                    username: 'teste_vercel',
+                    email: 'teste@vercel.com',
+                    password: 'hash123',
+                    createdAt: new Date().toISOString()
+                };
+                
+                const users = [testUser];
+                localStorage.setItem('keyauth_users_test', JSON.stringify(users));
+                
+                const loaded = JSON.parse(localStorage.getItem('keyauth_users_test'));
+                
+                if (loaded.length === 1 && loaded[0].username === 'teste_vercel') {
+                    updateStatus('✅ Criação de usuário funcionando!', 'success');
+                    localStorage.removeItem('keyauth_users_test');
+                } else {
+                    updateStatus('❌ Problema na criação de usuário', 'error');
+                }
+            } catch (e) {
+                updateStatus('❌ Erro na criação de usuário: ' + e.message, 'error');
+            }
+        }
+
+        function openMainSystem() {
+            // Redirecionar para o sistema principal
+            window.location.href = './index.html';
+        }
+
+        // Teste inicial automático
+        setTimeout(() => {
+            updateStatus('🚀 Testes concluídos! Clique nos botões para testar.', 'success');
+        }, 1000);
+
+        // Verificar se estamos na Vercel
+        if (window.location.hostname.includes('vercel.app')) {
+            addResult('🌐 Detectado: Rodando na Vercel!', 'success');
+        } else if (window.location.hostname === 'localhost') {
+            addResult('💻 Detectado: Rodando localmente', 'info');
+        } else {
+            addResult('🌍 Detectado: Rodando em: ' + window.location.hostname, 'info');
+        }
+    </script>
+</body>
+</html>

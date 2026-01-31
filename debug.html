@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug KeyAuth</title>
+    <style>
+        body { 
+            font-family: Arial; 
+            padding: 20px; 
+            background: #1a1a1a; 
+            color: white; 
+        }
+        .debug-panel { 
+            background: #2a2a2a; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 10px 0; 
+        }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
+        .info { color: #3b82f6; }
+        button { 
+            padding: 10px 20px; 
+            margin: 5px; 
+            background: #3b82f6; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+        }
+        input { 
+            padding: 8px; 
+            margin: 5px; 
+            background: #333; 
+            color: white; 
+            border: 1px solid #555; 
+            border-radius: 4px; 
+        }
+        #log { 
+            background: #000; 
+            color: #0f0; 
+            padding: 10px; 
+            border-radius: 4px; 
+            font-family: monospace; 
+            height: 300px; 
+            overflow-y: auto; 
+        }
+    </style>
+</head>
+<body>
+    <h1>🐛 Debug KeyAuth System</h1>
+    
+    <div class="debug-panel">
+        <h3>📊 Status do Sistema</h3>
+        <div id="status">Carregando...</div>
+    </div>
+    
+    <div class="debug-panel">
+        <h3>🧪 Teste de Registro</h3>
+        <input type="text" id="testUsername" placeholder="Username" value="teste123">
+        <input type="email" id="testEmail" placeholder="Email" value="teste@teste.com">
+        <input type="password" id="testPassword" placeholder="Senha" value="senha123">
+        <button onclick="testRegister()">Testar Registro</button>
+        <button onclick="testLogin()">Testar Login</button>
+    </div>
+    
+    <div class="debug-panel">
+        <h3>💾 Dados Salvos</h3>
+        <button onclick="showData()">Mostrar Dados</button>
+        <button onclick="clearData()">Limpar Dados</button>
+        <div id="dataDisplay"></div>
+    </div>
+    
+    <div class="debug-panel">
+        <h3>📝 Log de Debug</h3>
+        <div id="log"></div>
+        <button onclick="clearLog()">Limpar Log</button>
+    </div>
+
+    <script>
+        let users = [];
+        let keys = [];
+        let services = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logDiv.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function loadData() {
+            try {
+                users = JSON.parse(localStorage.getItem('keyauth_users') || '[]');
+                keys = JSON.parse(localStorage.getItem('keyauth_keys') || '[]');
+                services = JSON.parse(localStorage.getItem('keyauth_services') || '[]');
+                log(`Dados carregados: ${users.length} usuários, ${keys.length} keys, ${services.length} serviços`, 'success');
+                updateStatus();
+            } catch (e) {
+                log('Erro ao carregar dados: ' + e.message, 'error');
+                users = [];
+                keys = [];
+                services = [];
+            }
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem('keyauth_users', JSON.stringify(users));
+                localStorage.setItem('keyauth_keys', JSON.stringify(keys));
+                localStorage.setItem('keyauth_services', JSON.stringify(services));
+                log('Dados salvos com sucesso', 'success');
+                return true;
+            } catch (e) {
+                log('Erro ao salvar dados: ' + e.message, 'error');
+                return false;
+            }
+        }
+
+        function updateStatus() {
+            const status = document.getElementById('status');
+            status.innerHTML = `
+                <div class="success">✅ Sistema funcionando</div>
+                <div>👥 Usuários: ${users.length}</div>
+                <div>🔑 Keys: ${keys.length}</div>
+                <div>🧩 Serviços: ${services.length}</div>
+                <div>💾 localStorage: ${localStorage.length} itens</div>
+            `;
+        }
+
+        function hashPassword(password) {
+            let hash = 0;
+            for (let i = 0; i < password.length; i++) {
+                const char = password.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        }
+
+        function generateToken() {
+            return Math.random().toString(36).substr(2) + Date.now().toString(36);
+        }
+
+        function testRegister() {
+            log('🧪 Iniciando teste de registro...', 'info');
+            
+            const username = document.getElementById('testUsername').value.trim();
+            const email = document.getElementById('testEmail').value.trim();
+            const password = document.getElementById('testPassword').value;
+
+            log(`Dados: username="${username}", email="${email}", password="${password}"`, 'info');
+
+            // Validações
+            if (!username || !email || !password) {
+                log('❌ Campos vazios detectados', 'error');
+                return;
+            }
+
+            if (username.length < 3) {
+                log('❌ Username muito curto', 'error');
+                return;
+            }
+
+            if (password.length < 4) {
+                log('❌ Senha muito curta', 'error');
+                return;
+            }
+
+            if (!email.includes('@')) {
+                log('❌ Email inválido', 'error');
+                return;
+            }
+
+            // Verificar duplicatas
+            if (users.find(u => u.username.toLowerCase() === username.toLowerCase())) {
+                log('❌ Usuário já existe', 'error');
+                return;
+            }
+
+            if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+                log('❌ Email já existe', 'error');
+                return;
+            }
+
+            // Criar usuário
+            const newUser = {
+                id: Date.now().toString(),
+                username: username,
+                email: email,
+                password: hashPassword(password),
+                token: generateToken(),
+                createdAt: new Date().toISOString()
+            };
+
+            log(`Criando usuário: ${JSON.stringify(newUser, null, 2)}`, 'info');
+
+            users.push(newUser);
+            
+            if (saveData()) {
+                log('✅ Registro bem-sucedido!', 'success');
+                updateStatus();
+            } else {
+                log('❌ Erro ao salvar usuário', 'error');
+            }
+        }
+
+        function testLogin() {
+            log('🧪 Iniciando teste de login...', 'info');
+            
+            const username = document.getElementById('testUsername').value.trim();
+            const password = document.getElementById('testPassword').value;
+
+            log(`Tentando login: username="${username}", password="${password}"`, 'info');
+
+            // Buscar usuário
+            const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+
+            if (!user) {
+                log('❌ Usuário não encontrado', 'error');
+                return;
+            }
+
+            log(`Usuário encontrado: ${user.username}`, 'success');
+
+            const hashedPassword = hashPassword(password);
+            log(`Senha hash: "${hashedPassword}" vs "${user.password}"`, 'info');
+
+            if (user.password !== hashedPassword) {
+                log('❌ Senha incorreta', 'error');
+                return;
+            }
+
+            log('✅ Login bem-sucedido!', 'success');
+        }
+
+        function showData() {
+            const display = document.getElementById('dataDisplay');
+            display.innerHTML = `
+                <h4>👥 Usuários (${users.length}):</h4>
+                <pre>${JSON.stringify(users, null, 2)}</pre>
+                <h4>🔑 Keys (${keys.length}):</h4>
+                <pre>${JSON.stringify(keys, null, 2)}</pre>
+                <h4>🧩 Serviços (${services.length}):</h4>
+                <pre>${JSON.stringify(services, null, 2)}</pre>
+            `;
+        }
+
+        function clearData() {
+            if (confirm('Limpar todos os dados?')) {
+                localStorage.removeItem('keyauth_users');
+                localStorage.removeItem('keyauth_keys');
+                localStorage.removeItem('keyauth_services');
+                localStorage.removeItem('keyauth_current_user');
+                users = [];
+                keys = [];
+                services = [];
+                log('🧹 Todos os dados foram limpos', 'info');
+                updateStatus();
+                document.getElementById('dataDisplay').innerHTML = '';
+            }
+        }
+
+        // Inicializar
+        loadData();
+        log('🚀 Debug panel carregado', 'success');
+    </script>
+</body>
+</html>

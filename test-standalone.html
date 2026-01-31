@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste KeyAuth Standalone</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #1a1a1a; color: white; }
+        .test { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #22c55e; }
+        .error { background: #ef4444; }
+        .info { background: #3b82f6; }
+        button { padding: 10px 20px; margin: 5px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste KeyAuth Standalone</h1>
+    <p>Este arquivo testa se o sistema standalone está funcionando corretamente.</p>
+    
+    <button onclick="testLocalStorage()">Testar localStorage</button>
+    <button onclick="testUserSystem()">Testar Sistema de Usuários</button>
+    <button onclick="testKeyGeneration()">Testar Geração de Keys</button>
+    <button onclick="clearData()">Limpar Dados</button>
+    
+    <div id="results"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test ${type}`;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            document.getElementById('results').appendChild(div);
+        }
+
+        function testLocalStorage() {
+            log('🔍 Testando localStorage...', 'info');
+            
+            try {
+                // Teste básico
+                localStorage.setItem('test', 'funcionando');
+                const result = localStorage.getItem('test');
+                
+                if (result === 'funcionando') {
+                    log('✅ localStorage funcionando!', 'success');
+                    localStorage.removeItem('test');
+                } else {
+                    log('❌ localStorage não está funcionando', 'error');
+                }
+                
+                // Teste com JSON
+                const testObj = { nome: 'teste', id: 123 };
+                localStorage.setItem('test_json', JSON.stringify(testObj));
+                const parsed = JSON.parse(localStorage.getItem('test_json'));
+                
+                if (parsed.nome === 'teste' && parsed.id === 123) {
+                    log('✅ JSON no localStorage funcionando!', 'success');
+                    localStorage.removeItem('test_json');
+                } else {
+                    log('❌ JSON no localStorage com problema', 'error');
+                }
+                
+            } catch (e) {
+                log('❌ Erro no localStorage: ' + e.message, 'error');
+            }
+        }
+
+        function testUserSystem() {
+            log('👤 Testando sistema de usuários...', 'info');
+            
+            try {
+                // Simular dados de usuário
+                const users = [
+                    {
+                        id: '123',
+                        username: 'teste',
+                        email: 'teste@teste.com',
+                        password: 'hash123',
+                        token: 'token123'
+                    }
+                ];
+                
+                localStorage.setItem('keyauth_users', JSON.stringify(users));
+                const loaded = JSON.parse(localStorage.getItem('keyauth_users'));
+                
+                if (loaded.length === 1 && loaded[0].username === 'teste') {
+                    log('✅ Sistema de usuários funcionando!', 'success');
+                } else {
+                    log('❌ Problema no sistema de usuários', 'error');
+                }
+                
+            } catch (e) {
+                log('❌ Erro no sistema de usuários: ' + e.message, 'error');
+            }
+        }
+
+        function testKeyGeneration() {
+            log('🔑 Testando geração de keys...', 'info');
+            
+            try {
+                // Simular geração de key
+                function generateKeyCode() {
+                    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                    let key = '';
+                    for (let i = 0; i < 4; i++) {
+                        for (let j = 0; j < 4; j++) {
+                            key += chars.charAt(Math.floor(Math.random() * chars.length));
+                        }
+                        if (i < 3) key += '-';
+                    }
+                    return key;
+                }
+                
+                const key1 = generateKeyCode();
+                const key2 = generateKeyCode();
+                
+                // Verificar formato
+                const keyPattern = /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+                
+                if (keyPattern.test(key1) && keyPattern.test(key2) && key1 !== key2) {
+                    log(`✅ Geração de keys funcionando! Exemplos: ${key1}, ${key2}`, 'success');
+                } else {
+                    log('❌ Problema na geração de keys', 'error');
+                }
+                
+                // Testar salvamento de keys
+                const keys = [
+                    {
+                        code: key1,
+                        name: 'Teste Key',
+                        serviceId: '123',
+                        ownerId: '456',
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+                
+                localStorage.setItem('keyauth_keys', JSON.stringify(keys));
+                const loadedKeys = JSON.parse(localStorage.getItem('keyauth_keys'));
+                
+                if (loadedKeys.length === 1 && loadedKeys[0].code === key1) {
+                    log('✅ Salvamento de keys funcionando!', 'success');
+                } else {
+                    log('❌ Problema no salvamento de keys', 'error');
+                }
+                
+            } catch (e) {
+                log('❌ Erro na geração de keys: ' + e.message, 'error');
+            }
+        }
+
+        function clearData() {
+            log('🧹 Limpando dados de teste...', 'info');
+            
+            const keys = ['keyauth_users', 'keyauth_keys', 'keyauth_services', 'keyauth_current_user'];
+            
+            keys.forEach(key => {
+                localStorage.removeItem(key);
+            });
+            
+            log('✅ Dados limpos!', 'success');
+        }
+
+        // Executar teste inicial
+        log('🚀 Sistema de testes carregado!', 'info');
+        log('Clique nos botões acima para testar cada funcionalidade.', 'info');
+    </script>
+</body>
+</html>

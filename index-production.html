@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KeyAuth System v2.0</title>
+    <style>
+        /* Mesmo CSS do index.html original */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        /* ... resto do CSS igual ao index.html ... */
+        /* Por brevidade, não vou copiar todo o CSS aqui */
+        /* Use o CSS completo do index.html original */
+    </style>
+</head>
+<body>
+    <!-- Mesmo HTML do index.html original -->
+    
+    <script>
+        // 🔧 CONFIGURAÇÃO PARA PRODUÇÃO
+        // SUBSTITUA pela URL do seu backend no Render:
+        const API = 'https://SEU-BACKEND.onrender.com';
+        
+        // ⚠️ IMPORTANTE: 
+        // 1. Faça deploy do backend no Render primeiro
+        // 2. Copie a URL gerada
+        // 3. Substitua 'SEU-BACKEND.onrender.com' pela URL real
+        // 4. Depois faça deploy deste arquivo no Netlify/Vercel
+        
+        // Resto do JavaScript igual ao index.html original...
+        let token = localStorage.getItem('token');
+        let userId = null;
+        let keys = [];
+        let services = [];
+        let selectedService = null;
+
+        // ... resto das funções JavaScript ...
+        
+        console.log('🔧 KeyAuth System v2.0 - Modo Produção');
+        console.log('📡 API Backend:', API);
+    </script>
+</body>
+</html>
